@@ -16,7 +16,7 @@ const initialState = { todos: [] };
 
 const margin = { marginLeft: "10px" };
 
-function App() {
+const TodoAppComp = () => {
   return (
     <div>
       <ul>
@@ -48,7 +48,29 @@ function App() {
       </span>
     </div>
   );
-}
+};
+
+const TodoListComp = ({ todos, onToggleTodo }) => {
+  return (
+    <div>
+      {todos.map(todo => (
+        <TodoItemComp key={todo.id} todo={todo} onToggleTodo={onToggleTodo} />
+      ))}
+    </div>
+  );
+};
+
+const TodoItemComp = ({ todo, onToggleTodo }) => {
+  const { name, id, completed } = todo;
+  return (
+    <div>
+      {name}
+      <button type="button" onClick={() => onToggleTodo(id)}>
+        {completed ? "Inomplete" : "Complete"}
+      </button>
+    </div>
+  );
+};
 
 const doSetFilter = filter => {
   return { type: FILTER_SET, payload: filter };
@@ -129,4 +151,4 @@ const unsubscribe = store.subscribe(() => {
   console.log(store.getState);
 });
 
-export default App;
+export default TodoAppComp;
