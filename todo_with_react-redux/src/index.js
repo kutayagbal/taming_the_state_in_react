@@ -7,15 +7,13 @@ const TODO_ADD = "TODO_ADD";
 const TODO_TOGGLE = "TODO_TOGGLE";
 const FILTER_SET = "FILTER_SET";
 
-// const list = [
-//   { id: 1, name: "AAAAAAAAAAAAA", completed: false },
-//   { id: 2, name: "BBBBBBBBBBBBBBB", completed: false },
-//   { id: 3, name: "CCCCCCCCC", completed: false },
-//   { id: 4, name: "DDDDDDDD", completed: false }
-// ];
+const list = [
+  { id: 10, name: "TEST TEST", completed: false },
+  { id: 20, name: "INITIAL LIST ELEMENT", completed: false }
+];
 
 let counter = 0;
-const initialState = { todoState: [] };
+const initialState = { todoState: list };
 
 const todoReducer = (state = [], action) => {
   switch (action.type) {
