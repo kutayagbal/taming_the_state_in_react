@@ -67,21 +67,27 @@ const doAddTodo = () => {
   };
 };
 
-const TodoAppComp = ({ todos, onToggleTodo, onAddTodo }) => {
-  return (
-    <TodoListComp
-      todos={todos}
-      onToggleTodo={onToggleTodo}
-      onAddTodo={onAddTodo}
-    />
-  );
+const mapStateToProps = state => {
+  return { todos: state.todoState };
 };
 
-const TodoListComp = ({ todos, onToggleTodo, onAddTodo }) => {
+const mapDispatchToPropsToggle = dispatch => {
+  return {
+    onToggleTodo: id => dispatch(doToggleTodo(id))
+  };
+};
+
+const mapDispatchToPropsAdd = dispatch => {
+  return {
+    onAddTodo: () => dispatch(doAddTodo())
+  };
+};
+
+const TodoListComp = ({ todos, onAddTodo }) => {
   return (
     <div>
       {todos.map(todo => (
-        <TodoItemComp key={todo.id} todo={todo} onToggleTodo={onToggleTodo} />
+        <ConnectedTodoItemComp key={todo.id} todo={todo} />
       ))}
       <button type="button" onClick={onAddTodo}>
         Add
@@ -96,32 +102,30 @@ const TodoItemComp = ({ todo, onToggleTodo }) => {
     <div style={margin}>
       {name}
       <button type="button" onClick={() => onToggleTodo(id)} style={margin}>
-        {completed ? "Inomplete" : "Complete"}
+        {completed ? "Incomplete" : "Complete"}
       </button>
     </div>
   );
 };
 
-const mapStateToProps = state => {
-  return { todos: state.todoState };
-};
-
-const mapDispatchToProps = dispatch => {
-  return {
-    onToggleTodo: id => dispatch(doToggleTodo(id)),
-    onAddTodo: () => dispatch(doAddTodo())
-  };
-};
-
-const ConnectedTodoAppComp = connect(
+const ConnectedTodoListComp = connect(
   mapStateToProps,
-  mapDispatchToProps
-)(TodoAppComp);
+  mapDispatchToPropsAdd
+)(TodoListComp);
+
+const ConnectedTodoItemComp = connect(
+  null,
+  mapDispatchToPropsToggle
+)(TodoItemComp);
+
+const TodoAppComp = () => {
+  return <ConnectedTodoListComp />;
+};
 
 const render = () => {
   ReactDOM.render(
     <Provider store={store}>
-      <ConnectedTodoAppComp />
+      <TodoAppComp />
     </Provider>,
     document.getElementById("root")
   );
