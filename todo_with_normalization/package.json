@@ -1,8 +1,9 @@
 {
-  "name": "todo_with_react-redux",
+  "name": "todo_with_normalization",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "normalizr": "^3.4.1",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-redux": "^7.1.3",

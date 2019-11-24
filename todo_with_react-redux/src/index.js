@@ -1,18 +1,21 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { createStore, combineReducers } from "redux";
+import { createStore, combineReducers, applyMiddleware } from "redux";
 import { Provider, connect } from "react-redux";
+import { createLogger } from "redux-logger";
+
+const logger = createLogger();
 
 const TODO_ADD = "TODO_ADD";
 const TODO_TOGGLE = "TODO_TOGGLE";
 const FILTER_SET = "FILTER_SET";
 
 const list = [
-  { id: 10, name: "TEST TEST", completed: false },
-  { id: 20, name: "INITIAL LIST ELEMENT", completed: false }
+  { id: 0, name: "TEST TEST", completed: false },
+  { id: 1, name: "INITIAL LIST ELEMENT", completed: false }
 ];
 
-let counter = 0;
+let counter = list.length - 1;
 const initialState = { todoState: list };
 
 const todoReducer = (state = [], action) => {
@@ -43,7 +46,7 @@ const rootReducer = combineReducers({
   filterState: filterReducer
 });
 
-const store = createStore(rootReducer, initialState);
+const store = createStore(rootReducer, initialState, applyMiddleware(logger));
 
 const margin = { margin: "10px" };
 
