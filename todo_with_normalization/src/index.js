@@ -1,12 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import ConnectedTodoApp from "./App";
+import TodoList from "./TodoList";
 import * as serviceWorker from "./serviceWorker";
 import { Provider } from "react-redux";
 import { createStore, applyMiddleware } from "redux";
 import { createLogger } from "redux-logger";
-import reducer from "./reducers";
+import todoReducer from "./reducers";
 import { schema, normalize } from "normalizr";
 
 const logger = createLogger();
@@ -38,15 +38,21 @@ const toDoSchema = new schema.Entity("todos", { assignedTo: assignedToSchema });
 
 const normalizedData = normalize(list, [toDoSchema]);
 
+const initialTodoState = {
+  todos: normalizedData.entities.todos,
+  todoIds: normalizedData.result,
+  assignees: normalizedData.entities.assignedTo
+};
+
 const store = createStore(
-  reducer,
-  { todos: normalizedData },
+  todoReducer,
+  initialTodoState,
   applyMiddleware(logger)
 );
 
 ReactDOM.render(
   <Provider store={store}>
-    <ConnectedTodoApp />
+    <TodoList />
   </Provider>,
   document.getElementById("root")
 );
