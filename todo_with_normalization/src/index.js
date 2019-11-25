@@ -41,7 +41,8 @@ const normalizedData = normalize(list, [toDoSchema]);
 const initialTodoState = {
   todos: normalizedData.entities.todos,
   todoIds: normalizedData.result,
-  assignees: normalizedData.entities.assignedTo
+  assignees: normalizedData.entities.assignedTo,
+  filterType: "SHOW_ALL"
 };
 
 const store = createStore(

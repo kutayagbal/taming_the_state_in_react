@@ -1,6 +1,7 @@
 export const CHANGE_ASSIGNED = "CHANGE_ASSIGNED";
 export const ADD_TODO = "ADD_TODO";
 export const TOGGLE_COMPLETED = "TOGGLE_COMPLETED";
+export const SET_FILTER = "SET_FILTER";
 
 const todoReducer = (state, action) => {
   switch (action.type) {
@@ -13,9 +14,16 @@ const todoReducer = (state, action) => {
     case TOGGLE_COMPLETED: {
       return applyToggleCompleted(state, action);
     }
+    case SET_FILTER: {
+      return applySetFilter(state, action);
+    }
     default:
       return state;
   }
+};
+
+const applySetFilter = (state, action) => {
+  return { ...state, filterType: action.payload.filterType };
 };
 
 const applyToggleCompleted = (state, action) => {
@@ -98,7 +106,7 @@ const applyChangeAssinedTo = (state, action) => {
     };
   }
 
-  const maxId = Math.max(...Object.keys(state.todoState.entities.assignedTo));
+  const maxId = Math.max(...Object.keys(state.assignees));
   newAssignee = { id: maxId + 1, name: action.payload.name };
 
   return {
