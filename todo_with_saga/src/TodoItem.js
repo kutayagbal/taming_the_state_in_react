@@ -1,16 +1,18 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { CHANGE_ASSIGNEE, TOGGLE_COMPLETED } from "./reducers";
+import { TOGGLE_COMPLETED } from "./reducers";
+import { CHANGE_ASSIGNEE_WITH_NOTIFICATION } from "./sagas";
+import uuid from "uuid";
 
 class TodoItem extends Component {
   constructor(props) {
     super(props);
-    this.state = { newAssignee: "" };
+    this.state = { assigneeName: "" };
   }
 
   render() {
-    const { todo, assignee, onChangeAssignee, onToggleCompleted } = this.props;
-    const { newAssignee } = this.state;
+    const { todo, assignee, onToggleCompleted } = this.props;
+    const { assigneeName } = this.state;
 
     return (
       <div>
@@ -21,33 +23,56 @@ class TodoItem extends Component {
         />
         <span className="Marg">Todo Name: {todo.name}</span>
         <span className="Marg">Assigned To: {assignee.name}</span>
-        <button
-          className="Marg"
-          onClick={() => {
-            onChangeAssignee(todo.id, newAssignee);
-            this.setState({ newAssignee: "" });
-          }}
-        >
+        <button className="Marg" onClick={() => this.changeAssignee()}>
           Change Assigned To:
         </button>
         <input
           type="text"
-          onChange={this.changeAssignee}
-          value={newAssignee.trim()}
+          onChange={this.onChangeAssigneeName}
+          value={assigneeName.trim()}
         />
       </div>
     );
   }
 
-  changeAssignee = e => {
-    this.setState({ newAssignee: e.target.value.trim() });
+  changeAssignee = () => {
+    const { onChangeAssignee, todo } = this.props;
+    const { assigneeName } = this.state;
+
+    let assignee = this.findAssignee(assigneeName);
+    let isNewAssignee = false;
+
+    if (assignee === undefined) {
+      //new assignee
+      isNewAssignee = true;
+      assignee = { id: uuid(), name: assigneeName };
+    }
+
+    onChangeAssignee(todo.id, assignee, isNewAssignee);
+
+    this.setState({ assigneeName: "" });
+  };
+
+  onChangeAssigneeName = e => {
+    this.setState({ assigneeName: e.target.value.trim() });
+  };
+
+  findAssignee = assigneeName => {
+    const { assignees } = this.props;
+    return Object.values(assignees).find(
+      assignee => assignee.name === assigneeName
+    );
   };
 }
 
-const doChangeAssignee = (todoId, newAssigneeName) => {
+const doChangeAssigneeWithNotification = (todoId, assignee, isNewAssignee) => {
   return {
-    type: CHANGE_ASSIGNEE,
-    payload: { todoId: todoId, newAssigneeName: newAssigneeName }
+    type: CHANGE_ASSIGNEE_WITH_NOTIFICATION,
+    payload: {
+      todoId: todoId,
+      assignee: assignee,
+      isNewAssignee: isNewAssignee
+    }
   };
 };
 
@@ -60,8 +85,10 @@ const doToggleCompleted = (todoId, isCompleted) => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    onChangeAssignee: (todoId, newAssigneeName) =>
-      dispatch(doChangeAssignee(todoId, newAssigneeName)),
+    onChangeAssignee: (todoId, assignee, isNewAssignee) =>
+      dispatch(
+        doChangeAssigneeWithNotification(todoId, assignee, isNewAssignee)
+      ),
     onToggleCompleted: (todoId, isCompleted) =>
       dispatch(doToggleCompleted(todoId, isCompleted))
   };
@@ -75,10 +102,15 @@ const getAssignee = (state, todoId) => {
   return state.todoState.assignees[state.todoState.todos[todoId].assignee];
 };
 
+const getAssignees = state => {
+  return state.todoState.assignees;
+};
+
 const mapStateToProps = (state, props) => {
   return {
     todo: getTodo(state, props.todoId),
-    assignee: getAssignee(state, props.todoId)
+    assignee: getAssignee(state, props.todoId),
+    assignees: getAssignees(state)
   };
 };
 

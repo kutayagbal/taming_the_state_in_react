@@ -4,8 +4,15 @@ import { connect } from "react-redux";
 function Notifications({ notifications }) {
   return (
     <div>
-      {notifications.map(note => (
-        <div key={note}>{note}</div>
+      {notifications.map((texts, nIndex) => (
+        <div key={nIndex}>
+          <div>
+            {texts.map((t, i) => (
+              <p key={i}>{t}</p>
+            ))}
+          </div>
+          <hr />
+        </div>
       ))}
     </div>
   );

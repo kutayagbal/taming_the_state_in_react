@@ -7,7 +7,7 @@ import { Provider } from "react-redux";
 import TodoList from "./TodoList";
 import rootReducer from "./reducers";
 import createSagaMiddleware from "redux-saga";
-import watchAddTodoWithNotification from "./sagas";
+import rootSaga from "./sagas";
 
 const logger = createLogger();
 
@@ -60,7 +60,7 @@ const store = createStore(
   applyMiddleware(saga, logger)
 );
 
-saga.run(watchAddTodoWithNotification);
+saga.run(rootSaga);
 
 ReactDOM.render(
   <Provider store={store}>

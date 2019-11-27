@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { ADD_TODO_WITH_NOTIFICATION } from "./sagas";
 import { connect } from "react-redux";
 import "./App.css";
+import uuid from "uuid";
 
 class AddTodo extends Component {
   constructor(props) {
@@ -10,7 +11,6 @@ class AddTodo extends Component {
   }
 
   render() {
-    const { onAddTodo } = this.props;
     const { todoName, assigneeName } = this.state;
 
     return (
@@ -33,10 +33,7 @@ class AddTodo extends Component {
         />
         <button
           className="Marg"
-          onClick={() => {
-            onAddTodo(todoName, assigneeName);
-            this.setState({ todoName: "", assigneeName: "" });
-          }}
+          onClick={() => this.createTodo(todoName, assigneeName)}
         >
           Add Todo
         </button>
@@ -44,30 +41,57 @@ class AddTodo extends Component {
     );
   }
 
+  createTodo = (todoName, assigneeName) => {
+    const { onAddTodo } = this.props;
+    let assignee = this.findAssignee(assigneeName);
+    let isNewAssignee = false;
+
+    if (assignee === undefined) {
+      //new assignee
+      isNewAssignee = true;
+      assignee = { id: uuid(), name: assigneeName };
+    }
+
+    const todo = { id: uuid(), name: todoName, assignee: assignee.id };
+    onAddTodo(todo, assignee, isNewAssignee);
+
+    this.setState({ todoName: "", assigneeName: "" });
+  };
+
   onChange = e => {
     this.setState({ [e.target.name]: e.target.value });
   };
-}
 
-// const doAddTodo = (todoName, assigneeName) => {
-//   return {
-//     type: ADD_TODO,
-//     payload: { todoId: uuid(), todoName: todoName, assigneeName: assigneeName }
-//   };
-// };
-
-function doAddTodoWithNotification(todoName, assigneeName) {
-  return {
-    type: ADD_TODO_WITH_NOTIFICATION,
-    payload: { todoName: todoName, assigneeName: assigneeName }
+  findAssignee = assigneeName => {
+    const { assignees } = this.props;
+    return Object.values(assignees).find(
+      assignee => assignee.name === assigneeName
+    );
   };
 }
 
-const mapDispatchToProps = dispatch => {
+const doAddTodoWithNotification = (todo, assignee, isNewAssignee) => {
   return {
-    onAddTodo: (todoName, assigneeName) =>
-      dispatch(doAddTodoWithNotification(todoName, assigneeName))
+    type: ADD_TODO_WITH_NOTIFICATION,
+    payload: { todo: todo, assignee: assignee, isNewAssignee: isNewAssignee }
   };
 };
 
-export default connect(undefined, mapDispatchToProps)(AddTodo);
+const mapDispatchToProps = dispatch => {
+  return {
+    onAddTodo: (todo, assignee, isNewAssignee) =>
+      dispatch(doAddTodoWithNotification(todo, assignee, isNewAssignee))
+  };
+};
+
+const getAssignees = state => {
+  return {
+    assignees: state.todoState.assignees
+  };
+};
+
+const mapStateToProps = state => {
+  return getAssignees(state);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(AddTodo);

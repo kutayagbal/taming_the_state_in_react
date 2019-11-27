@@ -1,4 +1,3 @@
-import uuid from "uuid";
 import { combineReducers } from "redux";
 
 export const ADD_TODO = "ADD_TODO";
@@ -6,15 +5,15 @@ export const SET_FILTER = "SET_FILTER";
 export const CHANGE_ASSIGNEE = "CHANGE_ASSIGNEE";
 export const TOGGLE_COMPLETED = "TOGGLE_COMPLETED";
 export const HIDE_NOTIFICATION = "HIDE_NOTIFICATION";
+export const ASSIGNEE_CREATED_NOTIFICATION = "ASSIGNEE_CREATED_NOTIFICATION";
 
 const notificationReducer = (state = { notifications: {} }, action) => {
   switch (action.type) {
-    case ADD_TODO: {
-      return applySetNotifyAboutAddTodo(state, action);
-    }
-    case HIDE_NOTIFICATION: {
+    case ADD_TODO:
+    case CHANGE_ASSIGNEE:
+      return applySetNotify(state, action);
+    case HIDE_NOTIFICATION:
       return applyRemoveNotification(state, action);
-    }
     default:
       return state;
   }
@@ -28,71 +27,50 @@ function applyRemoveNotification(state, action) {
   return { notifications: restNotifications };
 }
 
-function applySetNotifyAboutAddTodo(state, action) {
-  const { todoId, todoName } = action.payload;
-  return {
-    ...state,
-    notifications: {
-      ...state.notifications,
-      [todoId]: "Todo Created: " + todoName
-    }
-  };
+function applySetNotify(state, action) {
+  const { notification } = action.payload;
+  if (notification !== undefined) {
+    return {
+      ...state,
+      notifications: {
+        ...state.notifications,
+        [notification.id]: notification.texts
+      }
+    };
+  }
+
+  return state;
 }
 
 const todoReducer = (state = {}, action) => {
   switch (action.type) {
-    case CHANGE_ASSIGNEE: {
+    case CHANGE_ASSIGNEE:
       return applyChangeAssignee(state, action);
-    }
-    case ADD_TODO: {
+    case ADD_TODO:
       return applyAddTodo(state, action);
-    }
-    case TOGGLE_COMPLETED: {
+    case TOGGLE_COMPLETED:
       return applyToggleCompleted(state, action);
-    }
     default:
       return state;
   }
 };
 
 const applyAddTodo = (state, action) => {
-  const assignee = findAssigneeByName(
-    Object.values(state.assignees),
-    action.payload.assigneeName
-  );
+  const { todo, assignee, isNewAssignee } = action.payload;
 
-  if (assignee) {
-    let newTodo = {
-      id: uuid(),
-      name: action.payload.todoName,
-      completed: false,
-      assignee: assignee.id
-    };
-
+  if (isNewAssignee) {
     return {
       ...state,
-      todos: { ...state.todos, [newTodo.id]: newTodo },
-      todoIds: [...state.todoIds, newTodo.id]
+      todoIds: [...state.todoIds, todo.id],
+      todos: { ...state.todos, [todo.id]: todo },
+      assignees: { ...state.assignees, [assignee.id]: assignee }
     };
   }
 
-  const newAssignee = {
-    id: uuid(),
-    name: action.payload.assigneeName
-  };
-
-  const newTodo = {
-    id: action.payload.todoId,
-    name: action.payload.todoName,
-    completed: false,
-    assignee: newAssignee.id
-  };
-
   return {
     ...state,
-    todoIds: [...state.todoIds, newTodo.id],
-    todos: { ...state.todos, [newTodo.id]: newTodo },
-    assignees: { ...state.assignees, [newAssignee.id]: newAssignee }
+    todos: { ...state.todos, [todo.id]: todo },
+    todoIds: [...state.todoIds, todo.id]
   };
 };
 
@@ -123,43 +101,34 @@ const applyToggleCompleted = (state, action) => {
   };
 };
 
-const findAssigneeByName = (assignees, name) => {
-  return assignees.find(elem => elem.name === name);
-};
-
 const applyChangeAssignee = (state, action) => {
-  let newAssignee = findAssigneeByName(
-    Object.values(state.assignees),
-    action.payload.newAssigneeName
-  );
+  const { todoId, assignee, isNewAssignee } = action.payload;
 
-  if (newAssignee) {
+  if (isNewAssignee) {
     return {
       ...state,
       todos: {
         ...state.todos,
-        [action.payload.todoId]: {
-          ...state.todos[action.payload.todoId],
-          assignee: newAssignee.id
+        [todoId]: {
+          ...state.todos[todoId],
+          assignee: assignee.id
         }
+      },
+      assignees: {
+        ...state.assignees,
+        [assignee.id]: assignee
       }
     };
   }
-
-  newAssignee = { id: uuid(), name: action.payload.newAssigneeName };
 
   return {
     ...state,
     todos: {
       ...state.todos,
-      [action.payload.todoId]: {
-        ...state.todos[action.payload.todoId],
-        assignee: newAssignee.id
+      [todoId]: {
+        ...state.todos[todoId],
+        assignee: assignee.id
       }
-    },
-    assignees: {
-      ...state.assignees,
-      [newAssignee.id]: newAssignee
     }
   };
 };
